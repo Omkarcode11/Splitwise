@@ -144,6 +144,53 @@ classDiagram
 
 ---
 
+## 🚀 Getting Started
+
+### Prerequisites
+- **Java Development Kit (JDK) 21** or higher.
+- A terminal or command prompt.
+
+### 📥 Project Structure
+- `src/`: Contains all Java source files.
+- `bin/`: (Generated) Contains compiled `.class` files.
+- `App.java`: Main entry point with a demo flow.
+- `SplitwiseTest.java`: Comprehensive test suite.
+
+---
+
+## 🛠️ How to Compile and Run
+
+To compile and run the main application demo:
+
+```bash
+# 1. Create a workspace for compiled files
+mkdir -p bin
+
+# 2. Compile all source files
+javac -d bin src/*.java src/models/*.java src/enums/*.java src/factory/*.java src/strategy/*.java src/utils/*.java src/observer/*.java
+
+# 3. Run the main App
+java -cp bin App
+```
+
+---
+
+## 🧪 How to Run Tests
+
+The project includes a dedicated test suite `SplitwiseTest.java` that validates all core logic including splits, simplification, and user constraints.
+
+To run the tests:
+
+```bash
+# 1. Compile all files (including the test suite)
+javac -d bin src/*.java src/models/*.java src/enums/*.java src/factory/*.java src/strategy/*.java src/utils/*.java src/observer/*.java
+
+# 2. Run the Test suite
+java -cp bin SplitwiseTest
+```
+
+---
+
 ## 🧠 Debt Simplification Algorithm
 
 The project implements a **Min-Cash-Flow** algorithm. It calculates the net balance for every user (Total Owed - Total Owing). Users are then categorized into:

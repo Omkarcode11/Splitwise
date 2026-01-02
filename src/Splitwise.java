@@ -26,6 +26,10 @@ public class Splitwise {
         return instance;
     }
 
+    public synchronized static void resetInstance() {
+        instance = null;
+    }
+
     public User createUser(String name, String email) {
         User user = new User(name, email);
         this.users.put(user.getId(), user);

@@ -1,0 +1,74 @@
+
+--- Test Case 1: Equal Split in Group ---
+User created name : Alice and email : alice@test.com
+User created name : Bob and email : bob@test.com
+User created name : Charlie and email : charlie@test.com
+Group created name : Trip to Goa
+
+=========== Sending Notifications ====================
+User: Alice received message: New expense added: Dinner (Rs 300.0)
+User: Bob received message: New expense added: Dinner (Rs 300.0)
+User: Charlie received message: New expense added: Dinner (Rs 300.0)
+
+=========== Expense Message ====================
+Expense added to Trip to Goa: Dinner (Rs 300.0) paid by Alice and involved people are : 
+Alice : 100.0
+Bob : 100.0
+Charlie : 100.0
+balances sheet of Trip to Goa : 
+Alice owes Bob Rs 100.0
+Alice owes Charlie Rs 100.0
+Alice owes Bob Rs 100.0
+Alice owes Charlie Rs 100.0
+
+--- Test Case 2: Exact Split in Group ---
+
+=========== Sending Notifications ====================
+User: Alice received message: New expense added: Taxis (Rs 100.0)
+User: Bob received message: New expense added: Taxis (Rs 100.0)
+User: Charlie received message: New expense added: Taxis (Rs 100.0)
+
+=========== Expense Message ====================
+Expense added to Trip to Goa: Taxis (Rs 100.0) paid by Bob and involved people are : 
+Alice : 40.0
+Charlie : 60.0
+balances sheet of Trip to Goa : 
+Bob owes Charlie Rs 60.0
+Alice owes Bob Rs 60.0
+Bob owes Charlie Rs 60.0
+Alice owes Charlie Rs 100.0
+Alice owes Bob Rs 60.0
+Alice owes Charlie Rs 100.0
+
+--- Test Case 3: Debt Simplification ---
+balances sheet of Trip to Goa : 
+Charlie owes Alice Rs 320.0
+
+--- Test Case 4: Individual (P2P) Equal Payment ---
+Individual Expense added : Movie Ticket (Rs 40.0) paid by Alice
+Alice : 20.0
+Bob : 20.0
+User balance for Alice is {1e44d859-c860-4217-94b8-72b9bbf01f7c=-20.0}
+User balance for 1e44d859-c860-4217-94b8-72b9bbf01f7c is -20.0
+Bob owes money to Alice: Rs 20.0
+User balance for Bob is {816ea9a9-c17a-44ef-907d-5d8dd00891d0=20.0}
+User balance for 816ea9a9-c17a-44ef-907d-5d8dd00891d0 is 20.0
+Bob owes money to Alice: Rs 20.0
+
+--- Test Case 5: Settle Payment ---
+
+=========== Settling Expense ====================
+Settled expense from Bob to Alice (Rs 50.0)
+User: Alice received message: Settled expense from Bob to Alice (Rs 50.0)
+User: Bob received message: Settled expense from Bob to Alice (Rs 50.0)
+User: Charlie received message: Settled expense from Bob to Alice (Rs 50.0)
+balances sheet of Trip to Goa : 
+Alice owes Bob Rs 50.0
+Charlie owes Alice Rs 320.0
+Alice owes Bob Rs 50.0
+
+--- Test Case 6: Leaving Group Validation ---
+User not removed
+Can Alice leave with active debt? false
+
+--- ALL TESTS COMPLETED SUCCESSFULLY ---

@@ -77,24 +77,37 @@ public class Group {
         return this.users.stream().anyMatch(user -> user.getId().equals(userId));
     }
 
-    public void updateGroupBalance(String fromId, String toId, Double amount) {
-        this.balanceSheet.computeIfAbsent(fromId, k -> new HashMap<>());
-        this.balanceSheet.computeIfAbsent(toId, k -> new HashMap<>());
+    public void updateGroupBalance(String debtorId, String creditorId, Double amount) {
+        if (debtorId.equals(creditorId))
+            return;
 
-        double fromBalance = this.balanceSheet.get(fromId).getOrDefault(toId, 0.0);
-        this.balanceSheet.get(fromId).put(toId, fromBalance - amount);
+        // Ensure both maps exist
+        this.balanceSheet.computeIfAbsent(debtorId, k -> new HashMap<>());
+        this.balanceSheet.computeIfAbsent(creditorId, k -> new HashMap<>());
 
-        double toBalance = this.balanceSheet.get(toId).getOrDefault(fromId, 0.0);
-        this.balanceSheet.get(toId).put(fromId, toBalance + amount);
+        // If creditorId already owes debtorId, reduce that debt first
+        double creditorOwesDebtor = this.balanceSheet.get(creditorId).getOrDefault(debtorId, 0.0);
 
-        if (Math.abs(this.balanceSheet.get(fromId).get(toId)) == 0) {
-            this.balanceSheet.get(fromId).remove(toId);
+        if (creditorOwesDebtor > 0) {
+            if (creditorOwesDebtor >= amount) {
+                this.balanceSheet.get(creditorId).put(debtorId, creditorOwesDebtor - amount);
+            } else {
+                this.balanceSheet.get(creditorId).put(debtorId, 0.0);
+                this.balanceSheet.get(debtorId).put(creditorId,
+                        this.balanceSheet.get(debtorId).getOrDefault(creditorId, 0.0) + (amount - creditorOwesDebtor));
+            }
+        } else {
+            this.balanceSheet.get(debtorId).put(creditorId,
+                    this.balanceSheet.get(debtorId).getOrDefault(creditorId, 0.0) + amount);
         }
 
-        if (Math.abs(this.balanceSheet.get(toId).get(fromId)) == 0) {
-            this.balanceSheet.get(toId).remove(fromId);
+        // Clean up zero balances
+        if (this.balanceSheet.get(debtorId).getOrDefault(creditorId, 0.0) < 0.001) {
+            this.balanceSheet.get(debtorId).remove(creditorId);
         }
-
+        if (this.balanceSheet.get(creditorId).getOrDefault(debtorId, 0.0) < 0.001) {
+            this.balanceSheet.get(creditorId).remove(debtorId);
+        }
     }
 
     public boolean addExpense(String description, double totalAmount, String paidBy, List<Double> splits,
@@ -161,31 +174,23 @@ public class Group {
 
     public void showGroupBalance() {
         System.out.println("balances sheet of " + name + " : ");
+        boolean hasBalance = false;
 
         for (Map.Entry<String, Map<String, Double>> entry : this.balanceSheet.entrySet()) {
-            String userId = entry.getKey();
-            String userName = getUserByUserId(userId).getName();
-            // System.out.println(userName + " : ");
+            String userName = getUserByUserId(entry.getKey()).getName();
 
-            Map<String, Double> userBalance = entry.getValue();
-
-            if (userBalance.size() == 0) {
-                System.out.println("user " + userName + " has no balance");
-                continue;
-            }
-
-            for (Map.Entry<String, Double> balanceEntry : userBalance.entrySet()) {
-                String balanceUserId = balanceEntry.getKey();
-                String balanceUserName = getUserByUserId(balanceUserId).getName();
-
-                double balanceAmount = balanceEntry.getValue();
-                if (balanceAmount > 0) {
-                    System.out.println(userName + " owes " + balanceUserName + " Rs " + balanceAmount);
-                } else {
-                    System.out.println(balanceUserName + " owes " + userName + " Rs " + Math.abs(balanceAmount));
+            for (Map.Entry<String, Double> balanceEntry : entry.getValue().entrySet()) {
+                double amount = balanceEntry.getValue();
+                if (amount > 0.001) {
+                    String balanceUserName = getUserByUserId(balanceEntry.getKey()).getName();
+                    System.out.println(userName + " owes " + balanceUserName + " Rs " + amount);
+                    hasBalance = true;
                 }
             }
+        }
 
+        if (!hasBalance) {
+            System.out.println("All settled up!");
         }
     }
 
