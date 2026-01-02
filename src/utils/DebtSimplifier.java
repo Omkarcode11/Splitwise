@@ -9,60 +9,68 @@ public class DebtSimplifier {
 
     public static Map<String, Map<String, Double>> simplifyDebt(Map<String, Map<String, Double>> deptMap) {
         Map<String, Map<String, Double>> simplifiedDebtMap = new HashMap<>();
-        Map<String, Double> netDebtMap = new HashMap<>();
+        Map<String, Double> netBalanceMap = new HashMap<>();
 
         // 1. Calculate net balance for every involved user
+        // netBalance = (Amount others owe me) - (Amount I owe others)
+        // If netBalance > 0, they are a Creditor.
+        // If netBalance < 0, they are a Debtor.
         for (Map.Entry<String, Map<String, Double>> entry : deptMap.entrySet()) {
-            String user = entry.getKey();
-            netDebtMap.putIfAbsent(user, 0.0);
-
+            String debtor = entry.getKey();
             for (Map.Entry<String, Double> innerEntry : entry.getValue().entrySet()) {
-                String otherUser = innerEntry.getKey();
+                String creditor = innerEntry.getKey();
                 double amount = innerEntry.getValue();
 
-                netDebtMap.put(user, netDebtMap.get(user) + amount);
-                netDebtMap.putIfAbsent(otherUser, 0.0);
-                netDebtMap.put(otherUser, netDebtMap.get(otherUser) - amount);
+                netBalanceMap.put(debtor, netBalanceMap.getOrDefault(debtor, 0.0) - amount);
+                netBalanceMap.put(creditor, netBalanceMap.getOrDefault(creditor, 0.0) + amount);
             }
         }
 
-        // 2. Separate into Creditors (positive) and Debtors (negative)
-        List<String> creditors = new ArrayList<>();
-        List<String> debtors = new ArrayList<>();
+        // 2. Separate into Creditors (positive balance) and Debtors (negative balance)
+        // We use absolute values in lists to make math easier
+        List<BalanceNode> creditors = new ArrayList<>();
+        List<BalanceNode> debtors = new ArrayList<>();
 
-        for (String user : netDebtMap.keySet()) {
-            double balance = netDebtMap.get(user);
-            if (balance > 0.001) {
-                creditors.add(user);
-            } else if (balance < -0.001) {
-                debtors.add(user);
+        for (String user : netBalanceMap.keySet()) {
+            double bal = netBalanceMap.get(user);
+            if (bal > 0.001) {
+                creditors.add(new BalanceNode(user, bal));
+            } else if (bal < -0.001) {
+                debtors.add(new BalanceNode(user, Math.abs(bal)));
             }
         }
 
         // 3. Greedy algorithm to settle debts
         int i = 0, j = 0;
         while (i < creditors.size() && j < debtors.size()) {
-            String creditor = creditors.get(i);
-            String debtor = debtors.get(j);
+            BalanceNode creditorNode = creditors.get(i);
+            BalanceNode debtorNode = debtors.get(j);
 
-            double creditAmount = netDebtMap.get(creditor);
-            double debitAmount = Math.abs(netDebtMap.get(debtor));
-            double settleAmount = Math.min(creditAmount, debitAmount);
+            double settleAmount = Math.min(creditorNode.amount, debtorNode.amount);
 
-            if (settleAmount > 0.001) {
-                simplifiedDebtMap.computeIfAbsent(debtor, k -> new HashMap<>()).put(creditor, settleAmount);
-            }
+            simplifiedDebtMap.computeIfAbsent(debtorNode.userId, k -> new HashMap<>()).put(creditorNode.userId,
+                    settleAmount);
 
-            netDebtMap.put(creditor, creditAmount - settleAmount);
-            netDebtMap.put(debtor, netDebtMap.get(debtor) + settleAmount);
+            creditorNode.amount -= settleAmount;
+            debtorNode.amount -= settleAmount;
 
-            if (Math.abs(netDebtMap.get(creditor)) < 0.001)
+            if (creditorNode.amount < 0.001)
                 i++;
-            if (Math.abs(netDebtMap.get(debtor)) < 0.001)
+            if (debtorNode.amount < 0.001)
                 j++;
         }
 
         return simplifiedDebtMap;
+    }
+
+    private static class BalanceNode {
+        String userId;
+        double amount;
+
+        BalanceNode(String u, double a) {
+            userId = u;
+            amount = a;
+        }
     }
 
 }

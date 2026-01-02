@@ -16,10 +16,8 @@ Alice : 100.0
 Bob : 100.0
 Charlie : 100.0
 balances sheet of Trip to Goa : 
-Alice owes Charlie Rs 100.0
-Alice owes Bob Rs 100.0
-Alice owes Charlie Rs 100.0
-Alice owes Bob Rs 100.0
+Bob owes Alice Rs 100.0
+Charlie owes Alice Rs 100.0
 
 --- Test Case 2: Exact Split in Group ---
 
@@ -33,26 +31,23 @@ Expense added to Trip to Goa: Taxis (Rs 100.0) paid by Bob and involved people a
 Alice : 40.0
 Charlie : 60.0
 balances sheet of Trip to Goa : 
-Bob owes Charlie Rs 60.0
-Alice owes Charlie Rs 100.0
-Bob owes Charlie Rs 60.0
-Alice owes Bob Rs 60.0
-Alice owes Charlie Rs 100.0
-Alice owes Bob Rs 60.0
+Bob owes Alice Rs 60.0
+Charlie owes Bob Rs 60.0
+Charlie owes Alice Rs 100.0
 
 --- Test Case 3: Debt Simplification ---
 balances sheet of Trip to Goa : 
-Charlie owes Alice Rs 320.0
+Charlie owes Alice Rs 160.0
 
 --- Test Case 4: Individual (P2P) Equal Payment ---
 Individual Expense added : Movie Ticket (Rs 40.0) paid by Alice
 Alice : 20.0
 Bob : 20.0
-User balance for Alice is {09d9746f-bb78-4ae4-82cc-6f88d92dcfa4=-20.0}
-User balance for 09d9746f-bb78-4ae4-82cc-6f88d92dcfa4 is -20.0
+User balance for Alice is {5b52a179-891d-464d-aafd-fa0100cb5d3e=-20.0}
+User balance for 5b52a179-891d-464d-aafd-fa0100cb5d3e is -20.0
 Bob owes money to Alice: Rs 20.0
-User balance for Bob is {b126dbe5-880b-404d-88ae-98d352f81540=20.0}
-User balance for b126dbe5-880b-404d-88ae-98d352f81540 is 20.0
+User balance for Bob is {7f39fea5-b175-43ed-bd5d-1026148432aa=20.0}
+User balance for 7f39fea5-b175-43ed-bd5d-1026148432aa is 20.0
 Bob owes money to Alice: Rs 20.0
 
 --- Test Case 5: Settle Payment ---
@@ -63,8 +58,7 @@ User: Alice received message: Settled expense from Bob to Alice (Rs 50.0)
 User: Bob received message: Settled expense from Bob to Alice (Rs 50.0)
 User: Charlie received message: Settled expense from Bob to Alice (Rs 50.0)
 balances sheet of Trip to Goa : 
-Charlie owes Alice Rs 320.0
-Alice owes Bob Rs 50.0
+Charlie owes Alice Rs 160.0
 Alice owes Bob Rs 50.0
 
 --- Test Case 6: Leaving Group Validation ---

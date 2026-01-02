@@ -56,12 +56,17 @@ public class Group {
     }
 
     public boolean canLeaveGroup(String userId) {
-
-        Map<String, Double> balanceSheet = this.balanceSheet.get(userId);
-        for (Map.Entry<String, Double> entry : balanceSheet.entrySet()) {
-            if (Math.abs(entry.getValue()) > 0) {
+        // Check if this user owes anything
+        Map<String, Double> owesothers = this.balanceSheet.getOrDefault(userId, new HashMap<>());
+        for (double amount : owesothers.values()) {
+            if (Math.abs(amount) > 0.001)
                 return false;
-            }
+        }
+
+        // Check if anyone owes this user
+        for (Map<String, Double> othersBalances : this.balanceSheet.values()) {
+            if (Math.abs(othersBalances.getOrDefault(userId, 0.0)) > 0.001)
+                return false;
         }
 
         return true;
@@ -88,13 +93,14 @@ public class Group {
         // If creditorId already owes debtorId, reduce that debt first
         double creditorOwesDebtor = this.balanceSheet.get(creditorId).getOrDefault(debtorId, 0.0);
 
-        if (creditorOwesDebtor > 0) {
+        if (creditorOwesDebtor > 0.001) {
             if (creditorOwesDebtor >= amount) {
                 this.balanceSheet.get(creditorId).put(debtorId, creditorOwesDebtor - amount);
             } else {
                 this.balanceSheet.get(creditorId).put(debtorId, 0.0);
+                double remaining = amount - creditorOwesDebtor;
                 this.balanceSheet.get(debtorId).put(creditorId,
-                        this.balanceSheet.get(debtorId).getOrDefault(creditorId, 0.0) + (amount - creditorOwesDebtor));
+                        this.balanceSheet.get(debtorId).getOrDefault(creditorId, 0.0) + remaining);
             }
         } else {
             this.balanceSheet.get(debtorId).put(creditorId,
@@ -130,6 +136,7 @@ public class Group {
 
         for (Split split : newSplits) {
             if (!split.getUserId().equals(paidBy)) {
+                // split.getUserId() now owes paidBy
                 this.updateGroupBalance(split.getUserId(), paidBy, split.getAmount());
             }
         }
@@ -159,7 +166,13 @@ public class Group {
             return false;
         }
 
-        this.updateGroupBalance(fromUserId, toUserId, amount);
+        // When fromUserId gives money to toUserId, it REDUCES what fromUserId owes
+        // toUserId
+        // OR it increases what toUserId owes fromUserId.
+        // Both are handled by updateGroupBalance(toUserId, fromUserId, amount)
+        // Wait, if I (from) pay you (to), I am the creditor of this settlement
+        // transaction.
+        this.updateGroupBalance(toUserId, fromUserId, amount);
 
         String fromUserName = getUserByUserId(fromUserId).getName();
         String toUserName = getUserByUserId(toUserId).getName();
